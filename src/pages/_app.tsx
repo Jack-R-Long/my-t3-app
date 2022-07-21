@@ -1,7 +1,7 @@
 // src/pages/_app.tsx
 import "../styles/globals.css";
 import { withTRPC } from "@trpc/next";
-import type { AppRouter } from "../server/router";
+import type { AppRouter } from "../server/router/index";
 import type { AppType } from "next/dist/shared/lib/utils";
 import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
@@ -61,7 +61,7 @@ export default withTRPC<AppRouter>({
         return {}
       },
       links,
-      transformer: superjson,
+      transformer: superjson, //can use different data types (dates etc..)
       /**
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
@@ -71,5 +71,5 @@ export default withTRPC<AppRouter>({
   /**
    * @link https://trpc.io/docs/ssr
    */
-  ssr: false,
+  ssr: false, //no server side rendering
 })(MyApp);
