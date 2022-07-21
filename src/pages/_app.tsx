@@ -1,10 +1,12 @@
 // src/pages/_app.tsx
+import "../styles/globals.css";
 import { withTRPC } from "@trpc/next";
 import type { AppRouter } from "../server/router";
 import type { AppType } from "next/dist/shared/lib/utils";
 import superjson from "superjson";
 import { SessionProvider } from "next-auth/react";
-import "../styles/globals.css";
+import { loggerLink } from "@trpc/client/links/loggerLink"
+import { httpBatchLink } from "@trpc/client/links/httpBatchLink"
 
 const MyApp: AppType = ({
   Component,
@@ -34,8 +36,31 @@ export default withTRPC<AppRouter>({
      */
     const url = `${getBaseUrl()}/api/trpc`;
 
+    //Links added from tutorial
+    const links = [
+      loggerLink(),
+      httpBatchLink({
+        maxBatchSize: 10,
+        url,
+      }),
+    ]
+
     return {
-      url,
+      queryClientConfig: {
+        defaultOptions: {
+          queries: { staleTime: 60, }
+        },
+      },
+      headers() {
+        if (ctx?.req) {
+          return {
+            ...ctx.req.headers,
+            'x-ssr': '1'
+          }
+        }
+        return {}
+      },
+      links,
       transformer: superjson,
       /**
        * @link https://react-query.tanstack.com/reference/QueryClient
