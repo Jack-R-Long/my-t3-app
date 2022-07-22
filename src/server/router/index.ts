@@ -7,7 +7,7 @@ import { authRouter } from "./auth";
 
 export const appRouter = createRouter()
   .transformer(superjson)
-  .merge("user.", userRouter)
+  .merge("users.", userRouter)
   .merge("auth.", authRouter);
 
 // export type definition of API
