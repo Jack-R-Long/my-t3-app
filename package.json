@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "migrate dev": "npx primsa migrate dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
