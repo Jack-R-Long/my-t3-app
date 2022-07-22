@@ -23,6 +23,7 @@ function RegisterPage() {
     return (
         <>
             <form onSubmit={handleSubmit(onSubmit)}>
+                {error && error.message}
                 <h1>Register</h1>
                 <input type="email" placeholder="jane@jane.com" {...register('email')} />
                 <br />
@@ -31,7 +32,6 @@ function RegisterPage() {
 
 
             </form>
-            {error && error.message}
             <Link href="/login">Login</Link>
         </>
     )

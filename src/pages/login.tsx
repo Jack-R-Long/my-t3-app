@@ -8,31 +8,27 @@ function RegisterPage() {
     const { handleSubmit, register } = useForm<CreateUserInput>()
     const router = useRouter()
 
-    const { mutate, error } = trpc.useMutation(['users.register-user'], {
-        onSuccess: () => {
-            router.push('/login')
-        }
-
-
-    })
+    // const { mutate, error } = trpc.useMutation(['users.register-user'], {
+    //     onSuccess: () => {
+    //         router.push('/login')
+    //     }
+    // })
 
     function onSubmit(values: CreateUserInput) {
-        mutate(values)
+        // mutate(values)
     }
 
     return (
         <>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <h1>Register</h1>
+                {/* {error && error.message} */}
+                <h1>Login</h1>
                 <input type="email" placeholder="jane@jane.com" {...register('email')} />
-                <br />
-                <input type="text" placeholder="name" {...register('name')} />
-                <button type="submit">Register</button>
+                <button type="submit">Login </button>
 
 
             </form>
-            {error && error.message}
-            <Link href="/login">Login</Link>
+            <Link href="/register">Register</Link>
         </>
     )
 }
