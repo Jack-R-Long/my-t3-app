@@ -1,10 +1,11 @@
 import { createRouter } from "./context";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
-import { trpc } from "../../utils/trpc";
 import { TRPCError } from "@trpc/server"
 import { createUserSchema, requestOTPSchema } from "../../schema/user.schema";
+import { sendLoginEmail } from "../../utils/mailer";
+import { baseUrl, url } from "../constants"
+import { encode } from "../../utils/base64";
 
 export const userRouter = createRouter()
   .query("hello", {
@@ -58,8 +59,42 @@ export const userRouter = createRouter()
   })
   .mutation("requestOTP", {
     input: requestOTPSchema,
-    async resolve({ ctx }) {
-      return ctx;
+    async resolve({ input, ctx }) {
+      const { email, redirect } = input
+
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          email,
+        }
+      })
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found"
+        })
+      }
+
+      const token = await ctx.prisma.loginToken.create({
+        data: {
+          redirect,
+          user: {
+            connect: {
+              id: user.id,
+            }
+          }
+        }
+      })
+
+      await sendLoginEmail({
+        token: encode(`${token.id}:${user.email}`),
+        url: baseUrl,
+        email: user.email,
+      })
+      // send email to user
+
+
+      return true;
     }
 
   })

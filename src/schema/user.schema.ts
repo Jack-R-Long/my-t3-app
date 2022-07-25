@@ -13,6 +13,7 @@ export const createUserOutputSchema = z.object({
 
 export const requestOTPSchema = z.object({
     email: z.string().email(),
+    redirect: z.string().default('/')
 })
 
 export type CreateUserInput = z.TypeOf<typeof createUserSchema>
