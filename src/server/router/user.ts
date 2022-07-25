@@ -2,12 +2,18 @@ import { createRouter } from "./context";
 import { z } from "zod";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { TRPCError } from "@trpc/server"
-import { createUserSchema, requestOTPSchema } from "../../schema/user.schema";
+import { createUserSchema, requestOTPSchema, verifyOtpSchema } from "../../schema/user.schema";
 import { sendLoginEmail } from "../../utils/mailer";
 import { baseUrl, url } from "../constants"
-import { encode } from "../../utils/base64";
+import { decode, encode } from "../../utils/base64";
+import path, { resolve } from "path";
+import { verify } from "crypto";
+import { signJwt } from "../../utils/jwt";
+import { serialize } from 'cookie'
 
 export const userRouter = createRouter()
+  // hanlders
+  // query = GET (kind of)
   .query("hello", {
     input: z
       .object({
@@ -57,6 +63,7 @@ export const userRouter = createRouter()
       return await ctx.prisma.user.findMany();
     },
   })
+  // mutation is a POST
   .mutation("requestOTP", {
     input: requestOTPSchema,
     async resolve({ input, ctx }) {
@@ -94,8 +101,54 @@ export const userRouter = createRouter()
       // send email to user
 
 
-      return true;
+      return true
+    },
+
+  })
+  .query('verifyOTP', {
+    input: verifyOtpSchema,
+    async resolve({ input, ctx }) {
+
+      const [id, email] = decode(input.hash).split(':')
+
+      // find token by id
+      const token = await ctx.prisma.loginToken.findFirst({
+        where: {
+          id,
+          user: {
+            email
+          }
+        },
+        // get the user as well
+        include: {
+          user: true,
+        }
+      })
+
+      if (!token) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not a valid OTP"
+        })
+      }
+
+      const jwt = signJwt({
+        email: token.user.email,
+        id: token.user.id
+      })
+
+      ctx.res?.setHeader('Set-Cookie', serialize('token', jwt, { path: '/' }))
+
+      return {
+        redirect: token.redirect
+      }
+
     }
 
   })
+  // .query('me', {
+  //   resolve(ctx) {
+  //     ctx.user
+  //   }
+  // })
 
