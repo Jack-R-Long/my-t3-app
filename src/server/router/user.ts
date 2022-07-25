@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 import { trpc } from "../../utils/trpc";
 import { TRPCError } from "@trpc/server"
-import { createUserSchema } from "../../schema/user.schema";
+import { createUserSchema, requestOTPSchema } from "../../schema/user.schema";
 
 export const userRouter = createRouter()
   .query("hello", {
@@ -55,4 +55,12 @@ export const userRouter = createRouter()
     async resolve({ ctx }) {
       return await ctx.prisma.user.findMany();
     },
-  });
+  })
+  .mutation("requestOTP", {
+    input: requestOTPSchema,
+    async resolve({ ctx }) {
+      return ctx;
+    }
+
+  })
+
